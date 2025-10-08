@@ -24,10 +24,12 @@ function FlowEditor() {
 
   const [selectedNode, setSelectedNode] = useState(null);
 
+  // ✅ When a node is clicked, set it as selected
   const onNodeClick = (node) => {
     setSelectedNode(node);
   };
 
+  // ✅ Updates both selectedNode and nodes array by ID
   const handleInputChange = (field, value) => {
     if (!selectedNode) return;
 
@@ -35,16 +37,17 @@ function FlowEditor() {
       ...selectedNode,
       data: {
         ...selectedNode.data,
-        [field]: value,
+        [field]: value, // update specific field (label, api, method)
       },
     };
 
-    setSelectedNode(updatedNode);
-
-    // Update the nodes array too
+    // Update nodes list (find by ID)
     setNodes((prevNodes) =>
       prevNodes.map((n) => (n.id === selectedNode.id ? updatedNode : n))
     );
+
+    // Keep selectedNode in sync
+    setSelectedNode(updatedNode);
   };
 
   return (
@@ -120,7 +123,11 @@ function FlowEditor() {
 
         <Divider sx={{ mb: 2, borderColor: "#444" }} />
 
-        {selectedNode ? (
+        {!selectedNode ? (
+          <Typography variant="body2" color="gray">
+            Click on a node to configure its details.
+          </Typography>
+        ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {/* Label Field */}
             <TextField
@@ -182,10 +189,6 @@ function FlowEditor() {
               </Select>
             </FormControl>
           </Box>
-        ) : (
-          <Typography variant="body2" color="gray">
-            Click on a node to configure its details.
-          </Typography>
         )}
       </Box>
     </Box>
