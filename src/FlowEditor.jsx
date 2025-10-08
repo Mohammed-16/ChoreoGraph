@@ -1,109 +1,84 @@
-import React, { useState } from "react";
+import React from "react";
+import ReactFlow, { Background } from "reactflow";
+import "reactflow/dist/style.css";
 import {
   Box,
-  Paper,
   Typography,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Divider,
   TextField,
   Select,
   MenuItem,
   InputLabel,
   FormControl,
+  Button,
 } from "@mui/material";
 
-function FlowEditor() {
-  const [nodes, setNodes] = useState([
-    { id: "1", data: { label: "Node 1", api: "", method: "GET" } },
-    { id: "2", data: { label: "Node 2", api: "", method: "POST" } },
-    { id: "3", data: { label: "Node 3", api: "", method: "DELETE" } },
-  ]);
-
-  const [selectedNode, setSelectedNode] = useState(null);
-
-  // ✅ When a node is clicked, set it as selected
-  const onNodeClick = (node) => {
-    setSelectedNode(node);
-  };
-
-  // ✅ Updates both selectedNode and nodes array by ID
-  const handleInputChange = (field, value) => {
-    if (!selectedNode) return;
-
-    const updatedNode = {
-      ...selectedNode,
-      data: {
-        ...selectedNode.data,
-        [field]: value, // update specific field (label, api, method)
-      },
-    };
-
-    // Update nodes list (find by ID)
-    setNodes((prevNodes) =>
-      prevNodes.map((n) => (n.id === selectedNode.id ? updatedNode : n))
-    );
-
-    // Keep selectedNode in sync
-    setSelectedNode(updatedNode);
-  };
-
+function FlowEditor({
+  nodes,
+  onNodesChange,
+  nodeTypes,
+  selectedNode,
+  handleInputChange,
+  addApiNode,
+  onNodeClick,
+}) {
   return (
     <Box
       sx={{
         display: "flex",
         height: "100vh",
+        width: "100vw",
         bgcolor: "#121212",
         color: "white",
       }}
     >
-      {/* Left Panel */}
+      {/* ==== Left side: React Flow canvas ==== */}
       <Box
         sx={{
           flex: 1,
-          p: 3,
           borderRight: "1px solid #333",
+          position: "relative",
+          height: "100%",
+          width: "100%",
+          overflow: "hidden",
         }}
       >
-        <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
-          Node List (Click one)
-        </Typography>
-
-        <Paper
-          elevation={3}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={addApiNode}
           sx={{
-            backgroundColor: "#1e1e1e",
-            borderRadius: 2,
-            p: 1,
+            position: "absolute",
+            top: 10,
+            left: 10,
+            zIndex: 10,
           }}
         >
-          <List>
-            {nodes.map((node) => (
-              <ListItem disablePadding key={node.id}>
-                <ListItemButton
-                  onClick={() => onNodeClick(node)}
-                  sx={{
-                    borderRadius: 1,
-                    mb: 1,
-                    backgroundColor:
-                      selectedNode?.id === node.id ? "#1976d2" : "transparent",
-                    "&:hover": { backgroundColor: "#1565c0" },
-                  }}
-                >
-                  <ListItemText
-                    primary={node.data.label}
-                    primaryTypographyProps={{ color: "white" }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
+          + Add API Node
+        </Button>
+
+        {/* 👇 React Flow MUST be wrapped in a container with height + width */}
+        <Box sx={{ width: "100%", height: "100%" }}>
+          <ReactFlow
+            nodes={nodes}
+            nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
+            onNodeClick={onNodeClick}
+            fitView
+            nodesDraggable
+            nodesConnectable
+            panOnDrag
+            zoomOnScroll
+            minZoom={0.2}
+            maxZoom={1.5}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <Background color="#333" gap={16} />
+          </ReactFlow>
+        </Box>
       </Box>
 
-      {/* Right Sidebar */}
+      {/* ==== Right side: Node configuration sidebar ==== */}
       <Box
         sx={{
           width: 350,
@@ -111,7 +86,6 @@ function FlowEditor() {
           p: 3,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-start",
         }}
       >
         <Typography
@@ -129,7 +103,6 @@ function FlowEditor() {
           </Typography>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {/* Label Field */}
             <TextField
               label="Label"
               variant="outlined"
@@ -147,7 +120,6 @@ function FlowEditor() {
               }}
             />
 
-            {/* API Endpoint Field */}
             <TextField
               label="API Endpoint URL"
               variant="outlined"
@@ -165,13 +137,14 @@ function FlowEditor() {
               }}
             />
 
-            {/* HTTP Method Selector */}
             <FormControl fullWidth size="small">
               <InputLabel sx={{ color: "#aaa" }}>HTTP Method</InputLabel>
               <Select
                 value={selectedNode.data.method}
                 label="HTTP Method"
-                onChange={(e) => handleInputChange("method", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("method", e.target.value)
+                }
                 sx={{
                   color: "white",
                   ".MuiOutlinedInput-notchedOutline": {
