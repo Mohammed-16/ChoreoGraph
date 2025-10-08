@@ -88,19 +88,5 @@ To contribute:
 
 ---
 
-## 🧾 License
-
-Distributed under the **MIT License**.  
-See [`LICENSE`](LICENSE) for more information.
-
----
-
-## 💬 Contact
-
-**Author:** [Your Name](https://github.com/your_username)  
-**Project Link:** [https://github.com/your_username/choreograph-app](https://github.com/your_username/choreograph-app)
-
----
-
 ⭐ **If you like this project, consider giving it a star!**  
 Your support helps it grow 🌱
