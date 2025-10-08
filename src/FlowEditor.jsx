@@ -8,13 +8,18 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 
 function FlowEditor() {
   const [nodes, setNodes] = useState([
-    { id: "1", data: { label: "Node 1" } },
-    { id: "2", data: { label: "Node 2" } },
-    { id: "3", data: { label: "Node 3" } },
+    { id: "1", data: { label: "Node 1", api: "", method: "GET" } },
+    { id: "2", data: { label: "Node 2", api: "", method: "POST" } },
+    { id: "3", data: { label: "Node 3", api: "", method: "DELETE" } },
   ]);
 
   const [selectedNode, setSelectedNode] = useState(null);
@@ -23,12 +28,31 @@ function FlowEditor() {
     setSelectedNode(node);
   };
 
+  const handleInputChange = (field, value) => {
+    if (!selectedNode) return;
+
+    const updatedNode = {
+      ...selectedNode,
+      data: {
+        ...selectedNode.data,
+        [field]: value,
+      },
+    };
+
+    setSelectedNode(updatedNode);
+
+    // Update the nodes array too
+    setNodes((prevNodes) =>
+      prevNodes.map((n) => (n.id === selectedNode.id ? updatedNode : n))
+    );
+  };
+
   return (
     <Box
       sx={{
         display: "flex",
         height: "100vh",
-        bgcolor: "#121212", // dark background
+        bgcolor: "#121212",
         color: "white",
       }}
     >
@@ -91,23 +115,76 @@ function FlowEditor() {
           variant="h6"
           sx={{ mb: 2, color: "#90caf9", fontWeight: "bold" }}
         >
-          {selectedNode ? "Selected Node" : "No Node Selected"}
+          {selectedNode ? "Node Configuration" : "No Node Selected"}
         </Typography>
 
         <Divider sx={{ mb: 2, borderColor: "#444" }} />
 
         {selectedNode ? (
-          <Box>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-              <strong>ID:</strong> {selectedNode.id}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Label:</strong> {selectedNode.data.label}
-            </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {/* Label Field */}
+            <TextField
+              label="Label"
+              variant="outlined"
+              size="small"
+              value={selectedNode.data.label}
+              onChange={(e) => handleInputChange("label", e.target.value)}
+              fullWidth
+              InputLabelProps={{ style: { color: "#aaa" } }}
+              sx={{
+                input: { color: "white" },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: "#555" },
+                  "&:hover fieldset": { borderColor: "#90caf9" },
+                },
+              }}
+            />
+
+            {/* API Endpoint Field */}
+            <TextField
+              label="API Endpoint URL"
+              variant="outlined"
+              size="small"
+              value={selectedNode.data.api}
+              onChange={(e) => handleInputChange("api", e.target.value)}
+              fullWidth
+              InputLabelProps={{ style: { color: "#aaa" } }}
+              sx={{
+                input: { color: "white" },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: "#555" },
+                  "&:hover fieldset": { borderColor: "#90caf9" },
+                },
+              }}
+            />
+
+            {/* HTTP Method Selector */}
+            <FormControl fullWidth size="small">
+              <InputLabel sx={{ color: "#aaa" }}>HTTP Method</InputLabel>
+              <Select
+                value={selectedNode.data.method}
+                label="HTTP Method"
+                onChange={(e) => handleInputChange("method", e.target.value)}
+                sx={{
+                  color: "white",
+                  ".MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#555",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#90caf9",
+                  },
+                }}
+              >
+                <MenuItem value="GET">GET</MenuItem>
+                <MenuItem value="POST">POST</MenuItem>
+                <MenuItem value="PUT">PUT</MenuItem>
+                <MenuItem value="DELETE">DELETE</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
         ) : (
           <Typography variant="body2" color="gray">
-            Click on a node to view its details.
+            Click on a node to configure its details.
           </Typography>
         )}
       </Box>
