@@ -5,10 +5,10 @@ import FlowEditor from "./FlowEditor";
 import ApiNode from "./components/ApiNode";
 
 function App() {
-  // ✅ Memoized nodeTypes (fixes React Flow warning #1)
+  // ✅ Register node types (memoized)
   const nodeTypes = useMemo(() => ({ apiNode: ApiNode }), []);
 
-  // ✅ Node state lives here
+  // ✅ Node state and selected node
   const [nodes, setNodes, onNodesChange] = useNodesState([
     {
       id: "1",
@@ -34,7 +34,7 @@ function App() {
 
   const [selectedNode, setSelectedNode] = useState(null);
 
-  // ✅ Add a new node near the last one
+  // ✅ Add a new node
   const addApiNode = () => {
     const lastNode = nodes[nodes.length - 1];
     const newNode = {
@@ -53,7 +53,7 @@ function App() {
     setNodes((prev) => [...prev, newNode]);
   };
 
-  // ✅ Update form changes
+  // ✅ Update node data from form
   const handleInputChange = (field, value) => {
     if (!selectedNode) return;
 
@@ -65,15 +65,15 @@ function App() {
     setNodes((prev) =>
       prev.map((n) => (n.id === selectedNode.id ? updatedNode : n))
     );
-
     setSelectedNode(updatedNode);
   };
 
-  // ✅ Handle node click
+  // ✅ When a node is clicked
   const onNodeClick = (_, node) => {
     setSelectedNode(node);
   };
 
+  // ✅ Pass everything down to FlowEditor
   return (
     <ReactFlowProvider>
       <FlowEditor
