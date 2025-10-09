@@ -182,6 +182,33 @@ function FlowEditor({
                                 <MenuItem value="DELETE">DELETE</MenuItem>
                             </Select>
                         </FormControl>
+
+                        {/* 🟢 API Response Section (add this new) */}
+                        {selectedNode.data.response && (
+                            <Box sx={{ mt: 2 }}>
+                                <Typography variant="subtitle1" sx={{ color: "#90caf9", mb: 1 }}>
+                                    API Response:
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        backgroundColor: "#121212",
+                                        borderRadius: "8px",
+                                        padding: "10px",
+                                        fontFamily: "monospace",
+                                        fontSize: "0.85rem",
+                                        color: "#dcdcdc",
+                                        maxHeight: "250px",
+                                        overflowY: "auto",
+                                        border: "1px solid #333",
+                                    }}
+                                >
+                                    <pre style={{ margin: 0 }}>
+                                        {JSON.stringify(selectedNode.data.response, null, 2)}
+                                    </pre>
+                                </Box>
+                            </Box>
+                        )}
+
                     </Box>
                 )}
             </Box>

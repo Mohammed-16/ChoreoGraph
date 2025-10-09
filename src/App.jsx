@@ -113,39 +113,118 @@ function App() {
     return order;
   };
 
+  // 🧩 Helper: Replace placeholders in URLs or body strings
+  function resolvePlaceholders(str, results) {
+    if (!str || typeof str !== "string") return str;
+
+    return str.replace(/\{(.*?)\}/g, (_, path) => {
+      try {
+        // Example path: node_1.data.user.name
+        const [nodeKey, ...rest] = path.split(".");
+        const nodeId = nodeKey.replace("node_", "");
+        const nodeData = results[nodeId];
+
+        if (!nodeData) return `{${path}}`;
+
+        // Traverse nested properties
+        let value = nodeData;
+        for (const key of rest) {
+          if (value && typeof value === "object") {
+            value = value[key];
+          } else {
+            return `{${path}}`; // leave unresolved if path not found
+          }
+        }
+
+        return value ?? `{${path}}`;
+      } catch (err) {
+        console.warn("Placeholder resolution failed for:", path);
+        return `{${path}}`;
+      }
+    });
+  }
+
+
   // ✅ Handle executing the flow in sorted order
   const handleRunFlow = async () => {
     console.log("▶ Running flow...");
-
-    // 1️⃣ Determine execution order
     const order = getExecutionOrder(nodes, edges);
-    console.log("Execution order:", order);
-
-    // 2️⃣ Prepare results storage
     const results = {};
 
-    // 3️⃣ Loop through the nodes in the correct order
     for (const nodeId of order) {
       const node = nodes.find((n) => n.id === nodeId);
+      if (!node) continue;
 
-      if (!node?.data?.api) {
-        console.warn(`⚠️ Skipping node ${nodeId}: No API URL defined`);
-        continue;
-      }
+      const { api, method, body } = node.data;
+
+      // 1️⃣ Mark node as "loading"
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === nodeId ? { ...n, data: { ...n.data, status: "loading" } } : n
+        )
+      );
+
+      // 2️⃣ Replace placeholders dynamically
+      const resolvedUrl = resolvePlaceholders(api, results);
+      const resolvedBody = body ? resolvePlaceholders(body, results) : null;
+
+      console.log(`🔹 Calling ${method} ${resolvedUrl}`);
 
       try {
-        console.log(`🔹 Calling ${node.data.method} ${node.data.api}`);
-        const response = await fetch(node.data.api, { method: node.data.method });
-        const data = await response.json().catch(() => ({}));
+        const options = { method };
+        if (resolvedBody && method !== "GET") {
+          options.headers = { "Content-Type": "application/json" };
+          options.body = resolvedBody;
+        }
+
+        const response = await fetch(resolvedUrl, options);
+        const data = await response.json();
+
         results[nodeId] = data;
+
+        // ✅ THIS IS THE SECTION YOU NEED TO REPLACE
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === nodeId
+              ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  status: "success",
+                  response: data, // 👈 add this line
+                },
+              }
+              : n
+          )
+        );
+
+        console.log(`✅ Node ${nodeId} success`);
       } catch (error) {
-        console.error(`❌ Error calling node ${nodeId}:`, error);
+        console.error(`❌ Node ${nodeId} failed:`, error);
         results[nodeId] = { error: error.message };
+
+        // ⚠️ update on error
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === nodeId
+              ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  status: "error",
+                  response: { error: error.message }, // 👈 add this line too
+                },
+              }
+              : n
+          )
+        );
       }
     }
 
-    console.log("✅ Flow execution complete:", results);
+    console.log("🟢 Flow execution complete:", results);
   };
+
+
 
   // ✅ When a node is clicked
   const onNodeClick = (_, node) => {
@@ -165,7 +244,7 @@ function App() {
         getExecutionOrder={getExecutionOrder}
         addApiNode={addApiNode}
         onNodeClick={onNodeClick}
-        handleRunFlow={handleRunFlow}  
+        handleRunFlow={handleRunFlow}
       />
     </ReactFlowProvider>
   );

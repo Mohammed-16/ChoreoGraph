@@ -1,82 +1,72 @@
 import React from "react";
 import { Handle, Position } from "reactflow";
-import { Paper, Typography, Chip, Box } from "@mui/material";
+import { Paper, Typography, CircularProgress, Box } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
 
-function ApiNode({ data }) {
-  const getMethodColor = (method) => {
-    switch (method) {
-      case "GET":
-        return "success";
-      case "POST":
-        return "primary";
-      case "PUT":
-        return "warning";
-      case "DELETE":
-        return "error";
-      default:
-        return "default";
-    }
-  };
+const ApiNode = ({ data }) => {
+  const { label, method, status } = data;
+
+  // 🎨 Status-based color mapping
+  const borderColor =
+    status === "loading"
+      ? "#ff9800"
+      : status === "success"
+      ? "#4caf50"
+      : status === "error"
+      ? "#f44336"
+      : "#90caf9"; // default blue
 
   return (
     <Paper
-      elevation={6}
+      elevation={4}
       sx={{
-        p: 1.5,
-        minWidth: 160,
+        p: 2,
         borderRadius: 2,
-        border: "1px solid #555",
-        backgroundColor: "#263238", // visible on dark canvas
-        color: "white",
+        minWidth: 180,
         textAlign: "center",
+        border: `3px solid ${borderColor}`,
+        backgroundColor: "#263238",
+        color: "white",
         position: "relative",
       }}
     >
-      {/* Left handle */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{
-          background: "#90caf9",
-          width: 10,
-          height: 10,
-          borderRadius: "50%",
+      <Handle type="target" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
+
+      <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+        {label}
+      </Typography>
+
+      <Typography
+        variant="body2"
+        sx={{
+          mt: 1,
+          px: 1.5,
+          py: 0.5,
+          borderRadius: 1,
+          display: "inline-block",
+          backgroundColor:
+            method === "GET"
+              ? "#4caf50"
+              : method === "POST"
+              ? "#2196f3"
+              : method === "PUT"
+              ? "#ff9800"
+              : "#f44336",
         }}
-      />
+      >
+        {method}
+      </Typography>
 
-      {/* Node content */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <Typography
-          variant="subtitle1"
-          sx={{ fontWeight: "bold", mb: 1, color: "#90caf9" }}
-        >
-          {data.label || "Unnamed Node"}
-        </Typography>
-
-        <Chip
-          label={data.method || "GET"}
-          color={getMethodColor(data.method)}
-          size="small"
-          sx={{
-            fontWeight: "bold",
-            fontSize: "0.75rem",
-          }}
-        />
+      {/* 🌀 Status Indicator */}
+      <Box sx={{ position: "absolute", top: 6, right: 6 }}>
+        {status === "loading" && <CircularProgress size={16} color="warning" />}
+        {status === "success" && <CheckCircleIcon sx={{ color: "#4caf50" }} />}
+        {status === "error" && <ErrorIcon sx={{ color: "#f44336" }} />}
       </Box>
-
-      {/* Right handle */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={{
-          background: "#90caf9",
-          width: 10,
-          height: 10,
-          borderRadius: "50%",
-        }}
-      />
     </Paper>
   );
-}
+};
 
 export default ApiNode;
