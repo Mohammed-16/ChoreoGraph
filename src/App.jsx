@@ -172,10 +172,21 @@ function App() {
 
       try {
         const options = { method };
-        if (resolvedBody && method !== "GET") {
-          options.headers = { "Content-Type": "application/json" };
-          options.body = resolvedBody;
+
+        // Include body only for POST or PUT requests
+        if (["POST", "PUT"].includes(method)) {
+          try {
+            // Replace placeholders if any
+            const resolvedBody = body ? resolvePlaceholders(body, results) : null;
+            if (resolvedBody) {
+              options.headers = { "Content-Type": "application/json" };
+              options.body = resolvedBody;
+            }
+          } catch (err) {
+            console.warn(`⚠️ Error processing request body for node ${nodeId}`, err);
+          }
         }
+
 
         const response = await fetch(resolvedUrl, options);
         const data = await response.json();
@@ -220,8 +231,64 @@ function App() {
         );
       }
     }
-
     console.log("🟢 Flow execution complete:", results);
+  };
+
+  // 💾 Save the current flow as a JSON file
+  const handleSaveFlow = () => {
+    try {
+      // Combine nodes and edges into one object
+      const flowData = {
+        nodes,
+        edges,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Convert to JSON string
+      const jsonString = JSON.stringify(flowData, null, 2);
+
+      // Create a Blob and URL for download
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      // Create a temporary link and trigger download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "api-flow.json";
+      link.click();
+
+      // Cleanup
+      URL.revokeObjectURL(url);
+
+      console.log("✅ Flow saved successfully!");
+    } catch (error) {
+      console.error("❌ Failed to save flow:", error);
+    }
+  };
+
+  // 📂 Load a saved flow from a JSON file
+  const handleLoadFlow = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const jsonData = JSON.parse(e.target.result);
+
+        if (jsonData.nodes && jsonData.edges) {
+          setNodes(jsonData.nodes);
+          setEdges(jsonData.edges);
+          console.log("✅ Flow loaded successfully!");
+        } else {
+          console.error("❌ Invalid flow file format");
+        }
+      } catch (error) {
+        console.error("❌ Error loading flow:", error);
+      }
+    };
+
+    reader.readAsText(file);
   };
 
 
@@ -245,6 +312,8 @@ function App() {
         addApiNode={addApiNode}
         onNodeClick={onNodeClick}
         handleRunFlow={handleRunFlow}
+        onSaveFlow={handleSaveFlow}
+        onLoadFlow={handleLoadFlow}
       />
     </ReactFlowProvider>
   );

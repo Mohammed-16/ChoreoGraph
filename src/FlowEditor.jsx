@@ -24,6 +24,8 @@ function FlowEditor({
     addApiNode,
     onNodeClick,
     handleRunFlow,
+    onSaveFlow,
+    onLoadFlow,
 }) {
 
     return (
@@ -72,6 +74,18 @@ function FlowEditor({
                         onClick={handleRunFlow}
                     >
                         ▶ Run Flow
+                    </Button>
+                    <Button variant="outlined" color="secondary" onClick={onSaveFlow}>
+                        💾 Save Flow
+                    </Button>
+                    <Button variant="outlined" component="label" color="info">
+                        📂 Load Flow
+                        <input
+                            hidden
+                            type="file"
+                            accept=".json"
+                            onChange={onLoadFlow}
+                        />
                     </Button>
                 </Box>
 
@@ -182,6 +196,29 @@ function FlowEditor({
                                 <MenuItem value="DELETE">DELETE</MenuItem>
                             </Select>
                         </FormControl>
+
+                        {/* === Request Body Field (Visible only for POST or PUT) === */}
+                        {["POST", "PUT"].includes(selectedNode.data.method) && (
+                            <TextField
+                                label="Request Body (JSON)"
+                                variant="outlined"
+                                size="small"
+                                multiline
+                                minRows={4}
+                                value={selectedNode.data.body || ""}
+                                onChange={(e) => handleInputChange("body", e.target.value)}
+                                fullWidth
+                                InputLabelProps={{ style: { color: "#aaa" } }}
+                                sx={{
+                                    textarea: { color: "white" },
+                                    "& .MuiOutlinedInput-root": {
+                                        "& fieldset": { borderColor: "#555" },
+                                        "&:hover fieldset": { borderColor: "#90caf9" },
+                                    },
+                                }}
+                            />
+                        )}
+
 
                         {/* 🟢 API Response Section (add this new) */}
                         {selectedNode.data.response && (
