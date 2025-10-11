@@ -57,19 +57,35 @@ function App() {
   };
 
   // ✅ Update node data from form
-  const handleInputChange = (field, value) => {
-    if (!selectedNode) return;
+const handleInputChange = (field, value) => {
+  if (!selectedNode) return;
 
-    const updatedNode = {
-      ...selectedNode,
-      data: { ...selectedNode.data, [field]: value },
-    };
+  // Update nodes
+  setNodes((nds) =>
+    nds.map((n) => {
+      if (n.id === selectedNode.id) {
+        const updatedNode = {
+          ...n,
+          data: {
+            ...n.data,
+            [field]: value,
+            status: undefined,   // clear previous result
+            response: undefined, // clear old response
+          },
+        };
 
-    setNodes((prev) =>
-      prev.map((n) => (n.id === selectedNode.id ? updatedNode : n))
-    );
-    setSelectedNode(updatedNode);
-  };
+        // ✅ Keep selectedNode in sync
+        setSelectedNode(updatedNode);
+
+        return updatedNode;
+      }
+      return n;
+    })
+  );
+};
+
+
+
 
   // ✅ Determine execution order based on edges
   const getExecutionOrder = (nodes, edges) => {
