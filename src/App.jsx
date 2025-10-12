@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from "react";
-import { ReactFlowProvider, useNodesState, useEdgesState } from "reactflow";
+import { ReactFlowProvider, useNodesState, useEdgesState, addEdge } from "reactflow";
 import "reactflow/dist/style.css";
 import FlowEditor from "./FlowEditor";
 import ApiNode from "./components/ApiNode";
 
 function App() {
 
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
 
   // ✅ Register node types (memoized)
   const nodeTypes = useMemo(() => ({ apiNode: ApiNode }), []);
@@ -34,6 +34,7 @@ function App() {
       },
     },
   ]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const [selectedNode, setSelectedNode] = useState(null);
 
@@ -57,32 +58,32 @@ function App() {
   };
 
   // ✅ Update node data from form
-const handleInputChange = (field, value) => {
-  if (!selectedNode) return;
+  const handleInputChange = (field, value) => {
+    if (!selectedNode) return;
 
-  // Update nodes
-  setNodes((nds) =>
-    nds.map((n) => {
-      if (n.id === selectedNode.id) {
-        const updatedNode = {
-          ...n,
-          data: {
-            ...n.data,
-            [field]: value,
-            status: undefined,   // clear previous result
-            response: undefined, // clear old response
-          },
-        };
+    // Update nodes
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id === selectedNode.id) {
+          const updatedNode = {
+            ...n,
+            data: {
+              ...n.data,
+              [field]: value,
+              status: undefined,   // clear previous result
+              response: undefined, // clear old response
+            },
+          };
 
-        // ✅ Keep selectedNode in sync
-        setSelectedNode(updatedNode);
+          // ✅ Keep selectedNode in sync
+          setSelectedNode(updatedNode);
 
-        return updatedNode;
-      }
-      return n;
-    })
-  );
-};
+          return updatedNode;
+        }
+        return n;
+      })
+    );
+  };
 
 
 
@@ -306,7 +307,13 @@ const handleInputChange = (field, value) => {
 
     reader.readAsText(file);
   };
+  
 
+  // 🔗 When a user connects two nodes in the canvas
+  const onConnect = (params) => {
+    console.log("Edge created:", params);
+    setEdges((eds) => addEdge({ ...params, animated: true }, eds));
+  };
 
 
   // ✅ When a node is clicked
@@ -321,7 +328,6 @@ const handleInputChange = (field, value) => {
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
-        nodeTypes={nodeTypes}
         selectedNode={selectedNode}
         handleInputChange={handleInputChange}
         getExecutionOrder={getExecutionOrder}
@@ -330,6 +336,8 @@ const handleInputChange = (field, value) => {
         handleRunFlow={handleRunFlow}
         onSaveFlow={handleSaveFlow}
         onLoadFlow={handleLoadFlow}
+        onConnect={onConnect}
+        nodeTypes={{ apiNode: ApiNode }} 
       />
     </ReactFlowProvider>
   );

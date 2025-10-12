@@ -1,6 +1,10 @@
 import React from "react";
 import ReactFlow, { Background } from "reactflow";
 import "reactflow/dist/style.css";
+import { useNodesState, useEdgesState, addEdge } from "reactflow";
+import { useMemo } from "react";
+import ApiNode from "./components/ApiNode";
+
 import {
     Box,
     Typography,
@@ -13,10 +17,14 @@ import {
     Button,
 } from "@mui/material";
 
+  
+
 function FlowEditor({
     nodes,
     edges,
     onNodesChange,
+    onEdgesChange,
+    onConnect,
     nodeTypes,
     selectedNode,
     handleInputChange,
@@ -27,6 +35,16 @@ function FlowEditor({
     onSaveFlow,
     onLoadFlow,
 }) {
+
+    const memoizedNodeTypes = useMemo(() => ({ apiNode: ApiNode }), []);
+
+  const defaultEdgeOptions = useMemo(
+    () => ({
+      animated: true,
+      style: { stroke: "#90caf9", strokeWidth: 2 },
+    }),
+    []
+  );
 
     return (
         <Box
@@ -93,8 +111,11 @@ function FlowEditor({
                 <Box sx={{ width: "100%", height: "100%" }}>
                     <ReactFlow
                         nodes={nodes}
-                        nodeTypes={nodeTypes}
+                        edges={edges}   
+                        nodeTypes={memoizedNodeTypes}
                         onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
                         onNodeClick={onNodeClick}
                         fitView
                         nodesDraggable
@@ -104,6 +125,7 @@ function FlowEditor({
                         minZoom={0.2}
                         maxZoom={1.5}
                         style={{ width: "100%", height: "100%" }}
+                        defaultEdgeOptions={defaultEdgeOptions}
                     >
                         <Background color="#333" gap={16} />
                     </ReactFlow>
