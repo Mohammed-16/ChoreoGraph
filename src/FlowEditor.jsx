@@ -16,6 +16,7 @@ import {
     FormControl,
     Button,
 } from "@mui/material";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
   
 
@@ -105,6 +106,8 @@ function FlowEditor({
                             onChange={onLoadFlow}
                         />
                     </Button>
+                    <ConnectButton showBalance={false} accountStatus="address" />
+
                 </Box>
 
                 {/* === React Flow Canvas === */}
