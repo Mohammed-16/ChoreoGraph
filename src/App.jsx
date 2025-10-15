@@ -3,6 +3,48 @@ import { ReactFlowProvider, useNodesState, useEdgesState, addEdge } from "reactf
 import "reactflow/dist/style.css";
 import FlowEditor from "./FlowEditor";
 import ApiNode from "./components/ApiNode";
+import axios from "axios";
+
+const uploadToIPFS = async (nodes, edges) => {
+  try {
+    const jwt = import.meta.env.VITE_PINATA_JWT;
+
+    if (!jwt) {
+      alert("Pinata JWT missing! Add it in your .env file.");
+      return;
+    }
+
+    const jsonData = {
+      name: "Flow Configuration",
+      description: "API workflow created using FlowEditor",
+      data: { nodes, edges },
+      timestamp: new Date().toISOString(),
+    };
+
+    const res = await axios.post(
+      "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+      jsonData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+      }
+    );
+
+    const ipfsHash = res.data.IpfsHash;
+    const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+
+    alert(`✅ Flow published to IPFS!\n\nURL: ${ipfsUrl}`);
+    console.log("IPFS Upload Response:", res.data);
+
+    return ipfsUrl;
+  } catch (error) {
+    console.error("❌ IPFS upload failed:", error);
+    alert("Failed to publish flow to IPFS.");
+  }
+};
+
 
 function App() {
 
@@ -321,6 +363,11 @@ function App() {
     setSelectedNode(node);
   };
 
+  const handlePublishFlow = async () => {
+  await uploadToIPFS(nodes, edges);
+};
+
+
   // ✅ Pass everything down to FlowEditor
   return (
     <ReactFlowProvider>
@@ -338,6 +385,7 @@ function App() {
         onLoadFlow={handleLoadFlow}
         onConnect={onConnect}
         nodeTypes={{ apiNode: ApiNode }} 
+        onPublishFlow={handlePublishFlow}
       />
     </ReactFlowProvider>
   );

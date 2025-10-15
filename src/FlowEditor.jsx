@@ -4,6 +4,7 @@ import "reactflow/dist/style.css";
 import { useNodesState, useEdgesState, addEdge } from "reactflow";
 import { useMemo } from "react";
 import ApiNode from "./components/ApiNode";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 import {
     Box,
@@ -18,7 +19,7 @@ import {
 } from "@mui/material";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
-  
+
 
 function FlowEditor({
     nodes,
@@ -35,17 +36,18 @@ function FlowEditor({
     handleRunFlow,
     onSaveFlow,
     onLoadFlow,
+    onPublishFlow
 }) {
 
     const memoizedNodeTypes = useMemo(() => ({ apiNode: ApiNode }), []);
 
-  const defaultEdgeOptions = useMemo(
-    () => ({
-      animated: true,
-      style: { stroke: "#90caf9", strokeWidth: 2 },
-    }),
-    []
-  );
+    const defaultEdgeOptions = useMemo(
+        () => ({
+            animated: true,
+            style: { stroke: "#90caf9", strokeWidth: 2 },
+        }),
+        []
+    );
 
     return (
         <Box
@@ -107,14 +109,21 @@ function FlowEditor({
                         />
                     </Button>
                     <ConnectButton showBalance={false} accountStatus="address" />
-
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        startIcon={<CloudUploadIcon />}
+                        onClick={() => onPublishFlow()}
+                    >
+                        Publish
+                    </Button>
                 </Box>
 
                 {/* === React Flow Canvas === */}
                 <Box sx={{ width: "100%", height: "100%" }}>
                     <ReactFlow
                         nodes={nodes}
-                        edges={edges}   
+                        edges={edges}
                         nodeTypes={memoizedNodeTypes}
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
