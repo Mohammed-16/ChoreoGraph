@@ -112,8 +112,8 @@ function App() {
             data: {
               ...n.data,
               [field]: value,
-              status: undefined,   // clear previous result
-              response: undefined, // clear old response
+              status: undefined,   
+              response: undefined, 
             },
           };
 
@@ -191,7 +191,7 @@ function App() {
           if (value && typeof value === "object") {
             value = value[key];
           } else {
-            return `{${path}}`; // leave unresolved if path not found
+            return `{${path}}`; 
           }
         }
 
@@ -232,10 +232,10 @@ function App() {
       try {
         const options = { method };
 
-        // Include body only for POST or PUT requests
+        
         if (["POST", "PUT"].includes(method)) {
           try {
-            // Replace placeholders if any
+            
             const resolvedBody = body ? resolvePlaceholders(body, results) : null;
             if (resolvedBody) {
               options.headers = { "Content-Type": "application/json" };
@@ -252,7 +252,7 @@ function App() {
 
         results[nodeId] = data;
 
-        // ✅ THIS IS THE SECTION YOU NEED TO REPLACE
+        
         setNodes((nds) =>
           nds.map((n) =>
             n.id === nodeId
@@ -261,7 +261,7 @@ function App() {
                 data: {
                   ...n.data,
                   status: "success",
-                  response: data, // 👈 add this line
+                  response: data, 
                 },
               }
               : n
